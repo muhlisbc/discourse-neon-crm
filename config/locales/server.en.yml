@@ -1,0 +1,16 @@
+en:
+  neon:
+    authenticator_error_fetch_user_details: "Could not retrieve your user details. Do you have an active account?"
+
+  site_settings:
+    neon_enabled: "Enable NeonCRM plugin?"
+    neon_client_id: "Client ID"
+    neon_client_secret: "Client Secret"
+    neon_email_verified: "Check this if the NeonCRM has verified the email"
+    neon_overrides_email: "Override the Discourse email with the remote email on every login"
+    neon_debug_enabled: "Include rich debugging information in your logs"
+    neon_button_title: "The text for the login button"
+    neon_allow_association_change: Allow users to disconnect and reconnect their Discourse accounts from NeonCRM
+    neon_org_id: "Organization ID"
+    neon_api_key: "API Key"
+    neon_trial_mode: "Trial mode?"

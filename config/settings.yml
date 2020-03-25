@@ -1,0 +1,17 @@
+plugins:
+  neon_enabled:
+    default: false
+    client: true
+  neon_client_id: ''
+  neon_client_secret: ''
+  neon_org_id: ''
+  neon_email_verified: false
+  neon_overrides_email: false
+  neon_debug_enabled: false
+  neon_button_title:
+    default: 'with NeonCRM'
+    client: true
+  neon_allow_association_change:
+    default: false
+  neon_api_key: ""
+  neon_trial_mode: false
