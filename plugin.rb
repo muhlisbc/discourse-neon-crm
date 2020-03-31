@@ -178,7 +178,7 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
             session_id = neon_get_session_id
           end
 
-          raise errors
+          raise StandardError.new(errors)
         end
       rescue => e
         log2.call("request error: #{e}")
