@@ -52,7 +52,7 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
   def avatar_url(user_id)
     host = trial_mode? ? "trial.z2systems.com" : SiteSetting.neon_hostname
 
-    "https://#{host}/neon/resource/efaosandbox/images/account/#{user_id}/0_large.jpg"
+    "https://#{host}/neon/resource/#{SiteSetting.neon_org_id}/images/account/#{user_id}/0_large.jpg"
   end
 
   def register_middleware(omniauth)
