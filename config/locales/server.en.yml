@@ -14,3 +14,4 @@ en:
     neon_org_id: "Organization ID"
     neon_api_key: "API Key"
     neon_trial_mode: "Trial mode?"
+    neon_hostname: "Your NeonCRM installation hostname (domain). Example: secure.blah.com"

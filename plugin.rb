@@ -42,11 +42,17 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
   end
 
   def neon_token_url
-    if SiteSetting.neon_trial_mode
+    if trial_mode?
       return 'https://trial.z2systems.com/np/oauth/token'
     end
 
     'https://wwww.z2systems.com/np/oauth/token'
+  end
+
+  def avatar_url(user_id)
+    host = trial_mode? ? "trial.z2systems.com" : SiteSetting.neon_hostname
+
+    "https://#{host}/neon/resource/efaosandbox/images/account/#{user_id}/0_large.jpg"
   end
 
   def register_middleware(omniauth)
@@ -72,9 +78,13 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
   end
 
   def neon_endpoint
-    host = SiteSetting.neon_trial_mode ? 'trial.z2systems.com' : 'api.neoncrm.com'
+    host = trial_mode? ? 'trial.z2systems.com' : 'api.neoncrm.com'
 
     "https://#{host}/neonws/"
+  end
+
+  def trial_mode?
+    SiteSetting.neon_trial_mode
   end
 
   def neon_session_id
@@ -167,7 +177,8 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
           result = {
             nickname: resp.dig('login', 'username'),
             email: resp.dig('primaryContact', 'email1'),
-            name: name
+            name: name,
+            image: avatar_url(id)
           }
         else
           errors = resp['errors']
@@ -211,7 +222,7 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
     user_details = fetch_user_details(auth['uid'])
 
     if user_details.present?
-      %w[nickname name email].each do |property|
+      %w[nickname name email image].each do |property|
         auth['info'][property] = user_details[property.to_sym] if user_details[property.to_sym]
       end
     else
