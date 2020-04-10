@@ -2,7 +2,7 @@
 
 # name: neon-crm
 # about: NeonCRM OAuth2 Plugin
-# version: 0.1.0
+# version: 0.1.1
 # authors: Muhlis Cahyono (muhlisbc@gmail.com)
 # url: https://github.com/muhlisbc/discourse-neon-crm
 
@@ -224,6 +224,10 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
     if user_details.present?
       %w[nickname name email image].each do |property|
         auth['info'][property] = user_details[property.to_sym] if user_details[property.to_sym]
+      end
+
+      if existing_account && can_connect_existing_user?
+        existing_account.update!(name: auth['info']['name'])
       end
     else
       result = Auth::Result.new
