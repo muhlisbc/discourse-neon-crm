@@ -2,7 +2,7 @@
 
 # name: neon-crm
 # about: NeonCRM OAuth2 Plugin
-# version: 0.1.1
+# version: 0.1.2
 # authors: Muhlis Cahyono (muhlisbc@gmail.com)
 # url: https://github.com/muhlisbc/discourse-neon-crm
 
@@ -227,11 +227,6 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
       end
 
       log(auth.to_hash)
-      log(existing_account)
-
-      if existing_account && can_connect_existing_user?
-        existing_account.update!(name: auth['info']['name'])
-      end
     else
       result = Auth::Result.new
       result.failed = true
@@ -239,7 +234,15 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
       return result
     end
 
-    super(auth, existing_account: existing_account)
+    result = super(auth, existing_account: existing_account)
+
+    log(result.as_json)
+
+    if result.user
+      result.user.update!(name: result.name)
+    end
+
+    result
   end
 
   def enabled?
