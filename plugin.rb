@@ -226,6 +226,9 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
         auth['info'][property] = user_details[property.to_sym] if user_details[property.to_sym]
       end
 
+      log(auth.to_hash)
+      log(existing_account)
+
       if existing_account && can_connect_existing_user?
         existing_account.update!(name: auth['info']['name'])
       end
