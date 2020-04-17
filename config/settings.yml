@@ -16,3 +16,6 @@ plugins:
   neon_api_key: ""
   neon_trial_mode: false
   neon_hostname: ""
+  neon_paid_membership_names:
+    type: "list"
+    default: ""

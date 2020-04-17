@@ -1,6 +1,7 @@
 en:
   neon:
     authenticator_error_fetch_user_details: "Could not retrieve your user details. Do you have an active account?"
+    only_paid_members: "Sorry, you're not allowed to login"
 
   site_settings:
     neon_enabled: "Enable NeonCRM plugin?"
@@ -15,3 +16,4 @@ en:
     neon_api_key: "API Key"
     neon_trial_mode: "Trial mode?"
     neon_hostname: "Your NeonCRM installation hostname (domain). Example: secure.blah.com"
+    neon_paid_membership_names: "Paid membership names"

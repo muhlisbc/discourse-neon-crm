@@ -2,7 +2,7 @@
 
 # name: neon-crm
 # about: NeonCRM OAuth2 Plugin
-# version: 0.1.2
+# version: 0.2.0
 # authors: Muhlis Cahyono (muhlisbc@gmail.com)
 # url: https://github.com/muhlisbc/discourse-neon-crm
 
@@ -215,9 +215,106 @@ class NeonAuthenticator < Auth::ManagedAuthenticator
     SiteSetting.neon_overrides_email
   end
 
+  def neon_allowed_to_login?(id)
+    plans = SiteSetting.neon_paid_membership_names.split('|').map(&:downcase)
+
+    return true if plans.blank?
+
+    session_id = neon_session_id
+
+    log2 = ->(s) { log("membership check #{id} - #{s}") }
+    url = neon_endpoint + 'services/api/membership/listMemberships'
+
+    attempts = 0
+    result = nil
+    should_stop = false
+
+    normal_err = ->(s) do
+      should_stop = true
+      raise StandardError.new(s)
+    end
+
+    loop do
+      attempts += 1
+
+      begin
+        query = {
+          responseType: 'json',
+          userSessionId: session_id,
+          'outputfields.idnamepair.name' => ['Membership Name', 'Account ID'],
+          'searches.search.key' => 'Account ID',
+          'searches.search.searchOperator' => 'EQUAL',
+          'searches.search.value' => id
+        }
+
+        log2.call(url)
+        log2.call(query.as_json)
+
+        body = Excon.get(url, query: query).body
+        resp = JSON.parse(body)['listMembershipsResponse']
+        status = resp['operationResult']
+
+        if status == 'SUCCESS'
+          pairs = resp.dig('searchResults', 'nameValuePairs')
+
+          if pairs.blank?
+            normal_err.call('nameValuePairs blank')
+          end
+
+          if pairs.size > 1
+            normal_err.call('nameValuePairs contains more than 1')
+          end
+
+          account = pairs.first['nameValuePair'] # array
+          account_id = account.find {|x| x['name'] == 'Account ID'}['value']
+
+          if account_id != id
+            normal_err.call("id not match #{id} #{account_id}")
+          end
+
+          plan = account.find {|x| x['name'] == 'Membership Name'}['value']
+
+          if !plans.include?(plan.downcase)
+            normal_err.call("invalid plan #{plan}")
+          end
+
+          result = true
+        else
+          errors = resp['errors']
+          log2.call("error: #{errors}")
+
+          # expired
+          if errors['error'].map { |e| e['errorCode'].to_i }.include?(4)
+            session_id = neon_get_session_id
+          end
+
+          raise StandardError.new(errors)
+        end
+      rescue => e
+        log2.call("request error: #{e}")
+      end
+
+      if should_stop || result.present? || attempts >= 3
+        break
+      end
+    end
+
+    if result.blank?
+      log2.call('failed after 3 attempts or forced to stop')
+    end
+
+    result
+  end
+
   def after_authenticate(auth, existing_account: nil)
     log("after_authenticate response: \n\ncreds: #{auth['credentials'].to_hash}\nuid: #{auth['uid']}\ninfo: #{auth['info'].to_hash}\nextra: #{auth['extra'].to_hash}")
 
+    if !neon_allowed_to_login?(auth['uid'])
+      result = Auth::Result.new
+      result.failed = true
+      result.failed_reason = I18n.t('neon.only_paid_members')
+      return result
+    end
 
     user_details = fetch_user_details(auth['uid'])
 
